@@ -1,0 +1,6 @@
+{
+  "name": "詞彙腦力激盪擂台",
+  "description": "支援 人同時連線的即時 AI 詞彙聯想競賽平台，具備 QR Code 快速加入、AI 即時語意評分、五輪動態排行榜與賽後管理數據分析報表。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
