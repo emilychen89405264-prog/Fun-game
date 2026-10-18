@@ -388,36 +388,86 @@ export const PlayerMobileView: React.FC<PlayerMobileViewProps> = ({
         </div>
       )}
 
-      {/* GAME OVER / REPORT STATE ON MOBILE */}
+      {/* GAME OVER / REPORT STATE ON MOBILE: Show Personal Score + Final Leaderboard */}
       {(roomState.phase === 'GAME_OVER' || roomState.phase === 'REPORT') && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-5">
-          <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-amber-400">比賽圓滿結束</div>
-            <h2 className="text-2xl font-extrabold text-white">
-              您的最終排名：第 #{myOverallRank} 名
-            </h2>
-            <p className="text-xs text-slate-400">
-              總得分{' '}
-              <strong className="text-indigo-400 font-mono">
-                {existingPlayer.totalScore.toLocaleString()}
-              </strong>{' '}
-              分 · 累計通過 {existingPlayer.validWordsCount} 個有效詞彙
-            </p>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+          <div className="text-center space-y-3">
+            <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-amber-400">比賽圓滿結束 · 最終成績結算</div>
+              <h2 className="text-2xl font-extrabold text-white">
+                您的最終排名：第 #{myOverallRank} 名
+              </h2>
+              <p className="text-xs text-slate-400">
+                總得分{' '}
+                <strong className="text-indigo-400 font-mono">
+                  {existingPlayer.totalScore.toLocaleString()}
+                </strong>{' '}
+                分 · 累計通過 {existingPlayer.validWordsCount} 個有效詞彙
+              </p>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-2">
+              {roomState.categories.map((cat) => (
+                <div
+                  key={cat.roundNumber}
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center"
+                >
+                  <div className="text-[10px] text-slate-400">R{cat.roundNumber}</div>
+                  <div className="text-xs font-mono font-bold text-white tabular-nums">
+                    {existingPlayer.roundScores[cat.roundNumber] || 0}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-1.5 pt-2">
-            {roomState.categories.map((cat) => (
-              <div
-                key={cat.roundNumber}
-                className="bg-slate-950 border border-slate-800 rounded-lg p-2 text-center"
-              >
-                <div className="text-[10px] text-slate-400">R{cat.roundNumber}</div>
-                <div className="text-xs font-mono font-bold text-white tabular-nums">
-                  {existingPlayer.roundScores[cat.roundNumber] || 0}
+          {/* Full Final Leaderboard on Participant Phone */}
+          <div className="pt-4 border-t border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+              <span>全場最終排名成績榜</span>
+              <span>共 {playersSorted.length} 位挑戰者</span>
+            </div>
+
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {playersSorted.map((p, idx) => (
+                <div
+                  key={p.id}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs ${
+                    p.id === playerId
+                      ? 'bg-indigo-950/60 border-indigo-500/80 text-white'
+                      : 'bg-slate-950 border-slate-800/90 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className={`w-6 h-6 rounded-md flex items-center justify-center font-mono text-xs font-bold shrink-0 ${
+                        idx === 0
+                          ? 'bg-amber-400 text-slate-950'
+                          : idx === 1
+                          ? 'bg-slate-300 text-slate-950'
+                          : idx === 2
+                          ? 'bg-amber-700 text-white'
+                          : 'bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span className="font-semibold text-white truncate">{p.name}</span>
+                    {p.id === playerId && (
+                      <span className="text-[10px] font-bold text-indigo-400 shrink-0">(您)</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 font-mono tabular-nums shrink-0">
+                    <span className="text-slate-400 text-[11px]">{p.validWordsCount} 詞</span>
+                    <span className="font-bold text-emerald-400 text-sm">
+                      {p.totalScore.toLocaleString()} 分
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -14,6 +14,12 @@ import { PlayerMobileView } from './components/PlayerMobileView';
 type ViewMode = 'HOST' | 'PLAYER';
 
 export default function App() {
+  // If opened via QR Code (?join=1 or ?role=player), lock strictly to participant view with zero host controls
+  const [isParticipantOnly] = useState<boolean>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('join') === '1' || params.get('role') === 'player';
+  });
+
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('join') === '1' || params.get('role') === 'player' ? 'PLAYER' : 'HOST';
@@ -576,83 +582,95 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-100 flex flex-col">
-      {/* Top Bar Contract: 3 Zones separated by gap-8 */}
-      <header className="flex items-center justify-between gap-8 px-6 py-4 border-b border-slate-800/90 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
-        {/* Zone 1: Single text element wordmark */}
-        <a
-          href="/"
-          onClick={(e) => {
-            e.preventDefault();
-            setViewMode('HOST');
-          }}
-          className="text-xl font-extrabold tracking-tight text-white whitespace-nowrap shrink-0 font-display"
-        >
-          LexiRush
-        </a>
+      {isParticipantOnly ? (
+        /* Clean Participant-Only Header: No Host Stage controls or view switchers */
+        <header className="flex items-center justify-between px-4 py-3.5 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md sticky top-0 z-30">
+          <div className="text-base font-extrabold tracking-tight text-white truncate">
+            {roomState.title || '詞彙腦力激盪擂台'}
+          </div>
+          <div className="text-xs font-mono text-slate-400 shrink-0">
+            PIN: <strong className="text-indigo-400">{roomState.pin}</strong>
+          </div>
+        </header>
+      ) : (
+        /* Host Top Bar: 3 Zones separated by gap-8 */
+        <header className="flex items-center justify-between gap-8 px-6 py-4 border-b border-slate-800/90 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
+          {/* Zone 1: Single text element wordmark */}
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              setViewMode('HOST');
+            }}
+            className="text-xl font-extrabold tracking-tight text-white whitespace-nowrap shrink-0 font-display"
+          >
+            詞彙腦力激盪擂台
+          </a>
 
-        {/* Zone 2: 4 clean single-line text navigation links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
-          <button
-            onClick={() => {
-              setViewMode('HOST');
-              if (roomState.phase === 'REPORT') handleBackToPodium();
-            }}
-            className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              viewMode === 'HOST' && roomState.phase !== 'REPORT'
-                ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
-                : ''
-            }`}
-          >
-            主舞台大螢幕
-          </button>
-          <button
-            onClick={() => setViewMode('PLAYER')}
-            className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              viewMode === 'PLAYER'
-                ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
-                : ''
-            }`}
-          >
-            員工手機搶答端
-          </button>
-          <button
-            onClick={() => {
-              setViewMode('HOST');
-              handleShowReport();
-            }}
-            className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              viewMode === 'HOST' && roomState.phase === 'REPORT'
-                ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
-                : ''
-            }`}
-          >
-            管理數據分析報表
-          </button>
-          <button
-            onClick={() => {
-              setViewMode('HOST');
-              handleResetGame();
-            }}
-            className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            五輪題庫配置
-          </button>
-        </nav>
+          {/* Zone 2: 4 clean single-line text navigation links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+            <button
+              onClick={() => {
+                setViewMode('HOST');
+                if (roomState.phase === 'REPORT') handleBackToPodium();
+              }}
+              className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                viewMode === 'HOST' && roomState.phase !== 'REPORT'
+                  ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
+                  : ''
+              }`}
+            >
+              主舞台大螢幕
+            </button>
+            <button
+              onClick={() => setViewMode('PLAYER')}
+              className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                viewMode === 'PLAYER'
+                  ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
+                  : ''
+              }`}
+            >
+              員工手機搶答預覽
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('HOST');
+                handleShowReport();
+              }}
+              className={`hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                viewMode === 'HOST' && roomState.phase === 'REPORT'
+                  ? 'text-white underline underline-offset-8 decoration-indigo-500 decoration-2'
+                  : ''
+              }`}
+            >
+              管理數據分析報表
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('HOST');
+                handleResetGame();
+              }}
+              className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              題庫配置與重置
+            </button>
+          </nav>
 
-        {/* Zone 3: 1 primary action */}
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setViewMode(viewMode === 'HOST' ? 'PLAYER' : 'HOST')}
-            className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            {viewMode === 'HOST' ? '切換至員工手機視角' : '返回主持人投影大螢幕'}
-          </button>
-        </div>
-      </header>
+          {/* Zone 3: 1 primary action for Host to preview mobile UI */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => setViewMode(viewMode === 'HOST' ? 'PLAYER' : 'HOST')}
+              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              {viewMode === 'HOST' ? '預覽員工手機畫面' : '返回主舞台大螢幕'}
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {viewMode === 'HOST' ? (
+        {!isParticipantOnly && viewMode === 'HOST' ? (
           <HostStageView
             roomState={roomState}
             joinUrl={joinUrl}

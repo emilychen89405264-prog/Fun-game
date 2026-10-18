@@ -32,7 +32,7 @@ function createInitialRoomState(): RoomState {
   const initialCategories = getCategoriesByIds(DEFAULT_SELECTED_IDS);
   return {
     pin: '888168',
-    title: '年度企業全員腦力激盪大賽',
+    title: '腦力激盪大賽',
     phase: 'LOBBY',
     currentRound: 1,
     totalRounds: initialCategories.length,
